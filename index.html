@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INASEP - Ensayo OS-10</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#e8f0ee,#d4e5e0);min-height:100vh;color:#1a2e28}
+.screen{display:none}
+.screen.active{display:block}
+/* HEADER */
+.header{background:#2e4a42;color:white;padding:14px 18px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,0.3)}
+.header img{width:46px;height:46px;object-fit:contain;border-radius:6px}
+.header h1{font-size:18px;font-weight:800;letter-spacing:1px}
+.header p{font-size:11px;opacity:.7;text-transform:uppercase;font-weight:600}
+/* HOME */
+.hero{background:#2e4a42;color:white;text-align:center;padding:40px 24px 70px;border-radius:0 0 40px 40px;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+.hero img{width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 16px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4))}
+.hero-badge{background:#d4af37;color:#2e4a42;display:inline-block;padding:5px 14px;border-radius:4px;font-size:10px;font-weight:900;margin-bottom:14px;letter-spacing:1px}
+.hero h2{font-size:22px;font-weight:900;line-height:1.3}
+.hero p{font-size:13px;opacity:.75;margin-top:10px}
+.card{background:white;border-radius:28px;padding:24px;box-shadow:0 10px 40px rgba(46,74,66,0.12);margin:0 16px}
+.card-wrap{max-width:480px;margin:-40px auto 0;padding:0 16px}
+.modules{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+.module-item{background:#e8f0ee;border-radius:14px;padding:12px;text-align:center}
+.module-item span.icon{font-size:18px;display:block;margin-bottom:4px}
+.module-item span.label{font-size:10px;font-weight:800;color:#6b7280;text-transform:uppercase}
+.btn-gold{width:100%;background:linear-gradient(135deg,#d4af37,#b8962e);color:#2e4a42;font-weight:900;font-size:15px;padding:14px;border:none;border-radius:16px;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 15px rgba(212,175,55,0.4);transition:all .2s}
+.btn-gold:hover{filter:brightness(1.05);transform:translateY(-1px)}
+.btn-green{width:100%;background:linear-gradient(135deg,#25D366,#1da851);color:white;font-weight:800;font-size:14px;padding:13px;border:none;border-radius:16px;cursor:pointer;box-shadow:0 4px 12px rgba(37,211,102,0.3);transition:all .2s}
+.btn-green:hover{filter:brightness(1.05)}
+.btn-primary{width:100%;background:#4a7c6f;color:white;font-weight:800;font-size:15px;padding:16px;border:none;border-radius:16px;cursor:pointer;box-shadow:0 4px 15px rgba(74,124,111,0.4);transition:all .2s;margin-top:20px}
+.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+/* QUIZ */
+.quiz-wrap{max-width:600px;margin:0 auto;padding:16px}
+.progress-bar{background:#e5e7eb;height:5px;border-radius:99px;margin-bottom:8px;overflow:hidden}
+.progress-fill{background:#4a7c6f;height:100%;border-radius:99px;transition:width .4s ease}
+.progress-label{text-align:right;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:2px;margin-bottom:20px}
+.question-card{background:white;border-radius:24px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,0.07);border:1px solid #f3f4f6;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.cat-badge{position:absolute;top:14px;background:#e8f0ee;color:#4a7c6f;font-size:10px;font-weight:800;padding:4px 12px;border-radius:99px;text-transform:uppercase;letter-spacing:1px}
+.question-text{font-size:17px;font-weight:700;text-align:center;line-height:1.5;color:#1a2e28;margin-top:10px}
+.answer-btns{display:flex;gap:14px;margin-top:24px}
+.btn-true{flex:1;background:#16a34a;color:white;font-weight:900;font-size:16px;padding:22px 12px;border:none;border-radius:18px;cursor:pointer;box-shadow:0 4px 15px rgba(22,163,74,0.35);transition:all .2s}
+.btn-false{flex:1;background:#dc2626;color:white;font-weight:900;font-size:16px;padding:22px 12px;border:none;border-radius:18px;cursor:pointer;box-shadow:0 4px 15px rgba(220,38,38,0.35);transition:all .2s}
+.btn-true:hover,.btn-false:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.btn-true:active,.btn-false:active{transform:translateY(2px)}
+.result-feedback{margin-top:16px;border-radius:16px;padding:14px;text-align:center;font-weight:900;font-size:16px}
+.feedback-correct{background:#dcfce7;color:#16a34a}
+.feedback-wrong{background:#fee2e2;color:#dc2626}
+.explanation{background:white;border-left:4px solid #d4af37;border-radius:14px;padding:18px;margin-top:12px;box-shadow:0 2px 10px rgba(0,0,0,0.06)}
+.explanation p.label{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-bottom:6px}
+.explanation p.text{font-size:14px;color:#374151;line-height:1.6}
+.btn-next{width:100%;background:#2e4a42;color:white;font-weight:800;font-size:15px;padding:15px;border:none;border-radius:16px;cursor:pointer;margin-top:18px;box-shadow:0 4px 12px rgba(46,74,66,0.3);transition:all .2s}
+.btn-next:hover{filter:brightness(1.1)}
+/* RESULTS */
+.results-wrap{max-width:480px;margin:0 auto;padding:20px 16px}
+.result-card{background:white;border-radius:36px;padding:36px 28px;box-shadow:0 20px 60px rgba(46,74,66,0.15);text-align:center}
+.medal-badge{display:inline-block;padding:6px 18px;border-radius:50px;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
+.medal-gold{background:linear-gradient(135deg,#f6d860,#d4af37);color:#5a3e00}
+.medal-silver{background:linear-gradient(135deg,#d0d0d0,#a0a0a0);color:#2a2a2a}
+.medal-bronze{background:linear-gradient(135deg,#cd7f32,#a0522d);color:white}
+.medal-try{background:linear-gradient(135deg,#f87171,#dc2626);color:white}
+.pct-circle{width:150px;height:150px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 30px rgba(74,124,111,0.3)}
+.pct-number{font-size:46px;font-weight:900;color:white;line-height:1}
+.pct-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.75);text-transform:uppercase;margin-top:2px}
+.result-title{font-size:22px;font-weight:800;color:#1a2e28}
+.result-sub{color:#6b7280;margin-top:8px;font-size:14px}
+.result-sub strong{color:#1a2e28;font-size:17px}
+.result-phrase{margin-top:14px;font-style:italic;font-size:14px;color:#4a7c6f;font-weight:600}
+.divider{height:1px;background:#f3f4f6;margin:22px 0}
+/* SHARE BUTTONS */
+.share-section p.share-title{font-size:11px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:2px;text-align:center;margin-bottom:14px}
+.share-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;border-radius:14px;font-weight:800;font-size:15px;border:none;cursor:pointer;margin-bottom:10px;transition:all .2s}
+.share-btn:hover{transform:translateY(-2px);filter:brightness(1.07)}
+.share-dl{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;box-shadow:0 4px 15px rgba(124,58,237,0.4)}
+.share-fb{background:linear-gradient(135deg,#1877F2,#0d5bbf);color:white;box-shadow:0 4px 15px rgba(24,119,242,0.4)}
+.share-wa{background:linear-gradient(135deg,#25D366,#1da851);color:white;box-shadow:0 4px 15px rgba(37,211,102,0.4)}
+.share-tip{font-size:11px;color:#9ca3af;text-align:center;margin-top:6px}
+.btn-retry{width:100%;background:#2e4a42;color:white;font-weight:800;font-size:15px;padding:16px;border:none;border-radius:16px;cursor:pointer;box-shadow:0 4px 12px rgba(46,74,66,0.3);transition:all .2s}
+.btn-retry:hover{filter:brightness(1.1)}
+/* FOOTER */
+.footer{padding:28px 16px;max-width:480px;margin:0 auto}
+.footer p{text-align:center;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+.footer a{display:flex;align-items:center;gap:10px;background:white;padding:12px 16px;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid #f3f4f6;text-decoration:none;color:#1a2e28;font-size:14px;font-weight:600;margin-bottom:8px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease forwards}
+
+/* LOGIN INASEP */
+.login-brand {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-brand img {
+  width: 110px;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.2));
+}
+
+.login-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: #2e4a42;
+}
+
+.login-sub {
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 40px;
+  color: #4a7c6f;
+  font-weight: 600;
+}
+</style>
+</head>
+<body>
+    
+<!-- LOGIN -->
+<div id="screen-login" class="screen active">
+  <div class="card-wrap" style="margin-top:40px;">
+    <div class="card fade-in">
+
+      <!-- BRAND -->
+      <div class="login-brand">
+        <img src="logo_inasep.png" alt="INASEP Logo">
+        <div class="login-title">INASEP</div>
+        <div class="login-sub">CURSOS OS10 - ensayo os10</div>
+      </div>
+
+      <!-- INPUT -->
+      <input 
+        type="text" 
+        id="input-nombre" 
+        placeholder="Ingresa tu nombre"
+        style="width:100%;padding:12px;border-radius:12px;border:1px solid #d1d5db;margin-bottom:12px;font-size:14px;"
+      >
+
+      <!-- BUTTON -->
+      <button class="btn-primary" onclick="loginConGoogle()">
+        INGRESE AQUÍ - ENSAYO OS10
+      </button>
+
+      <!-- CONTACTO -->
+      <div class="footer">
+        <p>Contacto Institucional</p>
+
+        <a href="https://wa.me/56944061866" style="background:linear-gradient(135deg,#25D366,#1da851);color:white;border:none">
+          <span>+56 9 4406 1866</span>
+        </a>
+
+        <a href="https://www.inasep.cl" target="_blank" style="background:linear-gradient(135deg,#1a56db,#1e40af);color:white;border:none;box-shadow:0 4px 12px rgba(26,86,219,0.4);font-weight:800">
+          <span>www.inasep.cl</span>
+        </a>
+
+        <a href="https://maps.google.com/?q=Anibal+Pinto+875+Quilpue" target="_blank" style="background:linear-gradient(135deg,#EA4335,#c62828);color:white;border:none;box-shadow:0 4px 12px rgba(234,67,53,0.4);font-weight:800">
+          <span>Aníbal Pinto 875, Quilpué</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="screen-home" class="screen">
+  <div class="hero">
+    <img src="logo_inasep.png" alt="INASEP Logo">
+    <div class="hero-badge">SISTEMA DE PREPARACIÓN OFICIAL</div>
+    <h2>Ensayo de Prueba para Curso de Formación de Guardias</h2>
+    <p>Preparación Integral OS-10 · Ley 21.659</p>
+  </div>
+  <div class="card-wrap">
+    <div class="card">
+      <h3 style="font-weight:800;font-size:16px;color:#1a2e28;margin-bottom:6px">📋 Estructura del Examen</h3>
+      <p style="color:#6b7280;font-size:13px;line-height:1.6">Este ensayo mide tus conocimientos según los estándares actuales de seguridad privada.</p>
+      <div class="modules">
+        <div class="module-item"><span class="icon">⚖️</span><span class="label">Legislación</span></div>
+        <div class="module-item"><span class="icon">🛡️</span><span class="label">Prevención</span></div>
+        <div class="module-item"><span class="icon">📻</span><span class="label">Comunicación</span></div>
+        <div class="module-item"><span class="icon">🏢</span><span class="label">Seg. Instalaciones</span></div>
+        <div class="module-item"><span class="icon">🥋</span><span class="label">Téc. Reducción</span></div>
+        <div class="module-item"><span class="icon">🤝</span><span class="label">Ética/DDHH</span></div>
+        <div class="module-item" style="grid-column:span 2;max-width:50%;margin:0 auto;width:100%"><span class="icon">💻</span><span class="label">Tecnología</span></div>
+      </div>
+      <button class="btn-primary" onclick="startQuiz()" style="margin-top:0;margin-bottom:10px;background:linear-gradient(135deg,#2e4a42,#4a7c6f);font-size:16px;letter-spacing:0.5px">🚀 INICIAR ENSAYO INASEP</button>
+      <a href="https://inasep.github.io/INSCRIPCIONES/" target="_blank" style="display:block;text-align:center;width:100%;background:linear-gradient(135deg,#d4af37,#b8962e);color:#2e4a42;font-weight:900;padding:13px;border-radius:16px;margin-bottom:10px;text-decoration:none;font-size:14px;box-shadow:0 4px 12px rgba(212,175,55,0.35)">CUPOS CURSO OS10 INASEP</a>
+      <a href="https://wa.me/?text=Te invito a realizar este ensayo para Guardias de Seguridad Privada de Instituto INASEP SPA. ¡Éxito! https://inasep.github.io/ENSAYOSINASEP/" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;width:100%;background:linear-gradient(135deg,#25D366,#1da851);color:white;font-weight:800;padding:13px;border-radius:16px;margin-bottom:10px;text-decoration:none;font-size:14px;box-shadow:0 4px 12px rgba(37,211,102,0.3)">📲 Compartir este ensayo</a>
+    </div>
+  </div>
+  <div class="footer">
+    <p>Contacto Institucional</p>
+    <a href="https://wa.me/56944061866" style="background:linear-gradient(135deg,#25D366,#1da851);color:white;border:none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span>+56 9 4406 1866</span>
+    </a>
+    <a href="https://www.inasep.cl" target="_blank" style="background:linear-gradient(135deg,#1a56db,#1e40af);color:white;border:none;box-shadow:0 4px 12px rgba(26,86,219,0.4);font-weight:800"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5" fill="none"/><line x1="2" y1="12" x2="22" y2="12" stroke="white" stroke-width="1.5"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="white" stroke-width="1.5" fill="none"/></svg> <span>www.inasep.cl</span></a>
+    <a href="https://maps.google.com/?q=Anibal+Pinto+875+Quilpue" target="_blank" style="background:linear-gradient(135deg,#EA4335,#c62828);color:white;border:none;box-shadow:0 4px 12px rgba(234,67,53,0.4);font-weight:800"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg> <span>Aníbal Pinto 875, Quilpué</span></a>
+    <div class="nav-popup" style="display:none;background:#f0f7f4;border-radius:14px;padding:10px;margin:-4px 0 8px;gap:8px;flex-direction:column">
+      <a href="https://maps.google.com/?q=Anibal+Pinto+875+Quilpue" target="_blank" style="display:flex;align-items:center;gap:10px;background:white;padding:11px 14px;border-radius:10px;text-decoration:none;color:#1a2e28;font-size:14px;font-weight:700;border:none;box-shadow:0 1px 4px rgba(0,0,0,0.08)"><svg width="20" height="20" viewBox="0 0 24 24" fill="#EA4335"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg> <span>Abrir en Google Maps</span></a>
+      <a href="https://waze.com/ul?q=Anibal+Pinto+875+Quilpue&navigate=yes" target="_blank" style="display:flex;align-items:center;gap:10px;background:white;padding:11px 14px;border-radius:10px;text-decoration:none;color:#1a2e28;font-size:14px;font-weight:700;border:none;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-top:6px"><svg width="20" height="20" viewBox="0 0 48 48"><ellipse cx="24" cy="28" rx="20" ry="16" fill="#33CCFF"/><circle cx="16" cy="36" r="4" fill="#fff"/><circle cx="32" cy="36" r="4" fill="#fff"/><ellipse cx="24" cy="22" rx="14" ry="10" fill="#33CCFF"/><circle cx="19" cy="20" r="3" fill="#fff"/><circle cx="20" cy="20" r="1.5" fill="#333"/><circle cx="29" cy="20" r="3" fill="#fff"/><circle cx="30" cy="20" r="1.5" fill="#333"/><path d="M20 26 q4 4 8 0" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg> <span>Abrir en Waze</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz" class="screen">
+  <div class="header">
+    <img src="logo_inasep.png" alt="Logo">
+    <div><h1>INASEP</h1><p id="quiz-header-sub">Examen en Progreso</p></div>
+  </div>
+  <div class="quiz-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <p class="progress-label" id="progress-label">Pregunta 1 de 60</p>
+    <div class="question-card">
+      <span class="cat-badge" id="q-cat">Categoría</span>
+      <p class="question-text" id="q-text">Cargando pregunta...</p>
+    </div>
+    <div class="answer-btns" id="answer-btns">
+      <button class="btn-true" onclick="answer(true)">VERDADERO</button>
+      <button class="btn-false" onclick="answer(false)">FALSO</button>
+    </div>
+    <div id="feedback-area" style="display:none"></div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="screen-results" class="screen">
+  <div class="header">
+    <img src="logo_inasep.png" alt="Logo">
+    <div><h1>INASEP</h1><p>Reporte de Resultados</p></div>
+  </div>
+  <div class="results-wrap fade-in">
+    <div class="result-card">
+      <div id="medal-badge" class="medal-badge medal-gold">🏆 Nivel Élite</div>
+      <div class="pct-circle" id="pct-circle" style="background:#4a7c6f">
+        <span class="pct-number" id="pct-number">0%</span>
+        <span class="pct-label">Logrado</span>
+      </div>
+      <h2 class="result-title">¡Prueba Finalizada!</h2>
+      <p class="result-sub" id="result-sub">Respondiste <strong>0 de 60</strong> correctamente.</p>
+      <p class="result-phrase" id="result-phrase"></p>
+      <div class="divider"></div>
+
+      <div class="share-section">
+        <p class="share-title">📣 Compartir mi resultado</p>
+        <button class="share-btn share-wa" id="btn-wa" onclick="shareOnWhatsApp()">📲 Compartir por WhatsApp</button>
+        <button class="share-btn share-fb" id="btn-fb" onclick="shareOnFacebook()">👍 Compartir en Facebook</button>
+        <button class="share-btn" id="btn-img" onclick="downloadResultImage()" style="background:linear-gradient(135deg,#475569,#334155);color:white;box-shadow:0 4px 15px rgba(71,85,105,0.4)">📸 Guardar imagen del resultado</button>
+        <canvas id="result-canvas" style="display:none"></canvas>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn-retry" onclick="restartQuiz()">🔄 REINTENTAR ENSAYO</button>
+    </div>
+  </div>
+  <div class="footer">
+    <p>Contacto Institucional</p>
+    <a href="https://wa.me/56944061866" style="background:linear-gradient(135deg,#25D366,#1da851);color:white;border:none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span>+56 9 4406 1866</span>
+    </a>
+    <a href="https://www.inasep.cl" target="_blank" style="background:linear-gradient(135deg,#1a56db,#1e40af);color:white;border:none;box-shadow:0 4px 12px rgba(26,86,219,0.4);font-weight:800"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5" fill="none"/><line x1="2" y1="12" x2="22" y2="12" stroke="white" stroke-width="1.5"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="white" stroke-width="1.5" fill="none"/></svg> <span>www.inasep.cl</span></a>
+    <a href="https://maps.google.com/?q=Anibal+Pinto+875+Quilpue" target="_blank" style="background:linear-gradient(135deg,#EA4335,#c62828);color:white;border:none;box-shadow:0 4px 12px rgba(234,67,53,0.4);font-weight:800"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg> <span>Aníbal Pinto 875, Quilpué</span></a>
+    <div class="nav-popup" style="display:none;background:#f0f7f4;border-radius:14px;padding:10px;margin:-4px 0 8px;gap:8px;flex-direction:column">
+      <a href="https://maps.google.com/?q=Anibal+Pinto+875+Quilpue" target="_blank" style="display:flex;align-items:center;gap:10px;background:white;padding:11px 14px;border-radius:10px;text-decoration:none;color:#1a2e28;font-size:14px;font-weight:700;border:none;box-shadow:0 1px 4px rgba(0,0,0,0.08)"><svg width="20" height="20" viewBox="0 0 24 24" fill="#EA4335"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg> <span>Abrir en Google Maps</span></a>
+      <a href="https://waze.com/ul?q=Anibal+Pinto+875+Quilpue&navigate=yes" target="_blank" style="display:flex;align-items:center;gap:10px;background:white;padding:11px 14px;border-radius:10px;text-decoration:none;color:#1a2e28;font-size:14px;font-weight:700;border:none;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-top:6px"><svg width="20" height="20" viewBox="0 0 48 48"><ellipse cx="24" cy="28" rx="20" ry="16" fill="#33CCFF"/><circle cx="16" cy="36" r="4" fill="#fff"/><circle cx="32" cy="36" r="4" fill="#fff"/><ellipse cx="24" cy="22" rx="14" ry="10" fill="#33CCFF"/><circle cx="19" cy="20" r="3" fill="#fff"/><circle cx="20" cy="20" r="1.5" fill="#333"/><circle cx="29" cy="20" r="3" fill="#fff"/><circle cx="30" cy="20" r="1.5" fill="#333"/><path d="M20 26 q4 4 8 0" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg> <span>Abrir en Waze</span></a>
+    </div>
+  </div>
+</div>
+
+<script>
+// Configuración de Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAa_lDZMLiUPRSrzEhXtMe1KLLkb4NGpCQ",
+  authDomain: "ensayoinasep.firebaseapp.com",
+  projectId: "ensayoinasep",
+  storageBucket: "ensayoinasep.firebasestorage.app",
+  messagingSenderId: "542699729754",
+  appId: "1:542699729754:web:5ca92afa1185b59b71f963"
+};
+
+let db = null;
+let auth = null;
+let questionsDB = [];
+
+// Variables del quiz
+let activeQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let finalPct = 0;
+
+// Función para cargar preguntas desde Firebase
+// NOTA: _collection y _getDocs se asignan en initFirebaseAndLoad antes de llamar esta función
+let _collection = null;
+let _getDocs = null;
+
+async function loadQuestionsFromFirebase() {
+  if (!db || !_collection || !_getDocs) return [];
+  
+  try {
+    const questionsRef = _collection(db, "questions");
+    const snapshot = await _getDocs(questionsRef);
+    
+    if (!snapshot.empty) {
+      const questions = [];
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        questions.push({
+          cat: data.cat,
+          q: data.q,
+          a: data.a === true || data.a === "true" || data.a === "VERDADERO",
+          exp: data.exp
+        });
+      });
+      console.log(`✅ Cargadas ${questions.length} preguntas desde Firestore`);
+      return questions;
+    }
+  } catch (error) {
+    console.error("Error cargando preguntas desde Firestore:", error);
+  }
+  
+  console.log("⚠️ Usando preguntas por defecto");
+  return getDefaultQuestions();
+}
+
+// Preguntas por defecto (fallback)
+function getDefaultQuestions() {
+  return [
+    {cat:'Legislación',q:'¿La seguridad privada es una actividad complementaria a la seguridad pública?',a:true,exp:'Art. 2 de la Ley Nº 21.659.'},
+    {cat:'Legislación',q:'¿Las empresas de seguridad privada pueden investigar delitos de forma independiente?',a:false,exp:'Art. 5, letra c) de la Ley Nº 21.659.'},
+    {cat:'Prevención',q:'¿El triángulo del fuego está compuesto por combustible, comburente y calor?',a:true,exp:'Elementos básicos de la combustión.'},
+    {cat:'Prevención',q:'¿Los extintores PQS sirven para fuegos Clase A, B y C?',a:true,exp:'Extintor multipropósito.'},
+    {cat:'Comunicación',q:'¿El código "Afirmativo" en comunicaciones radiales es preferible a "Sí"?',a:true,exp:'Evita confusiones por mala recepción.'},
+    {cat:'Téc. Reducción',q:'¿Las esposas deben colocarse con las palmas de las manos hacia afuera?',a:true,exp:'Limita la movilidad del detenido.'},
+    {cat:'Ética/DDHH',q:'¿La Ley Zamudio prohíbe la discriminación arbitraria?',a:true,exp:'Ley 20.609.'},
+    {cat:'Seg. Instalaciones',q:'¿Los puntos ciegos en cámaras no representan una vulnerabilidad?',a:false,exp:'Son áreas sin cobertura que deben evitarse.'}
+  ];
+}
+
+// Inicializar Firebase y cargar preguntas
+async function initFirebaseAndLoad() {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    window.GoogleAuthProvider = GoogleAuthProvider;
+    window.signInWithPopup = signInWithPopup;
+    window._onAuthStateChanged = onAuthStateChanged;
+    const { getFirestore, doc, setDoc, collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    
+    // Exponer al scope superior para loadQuestionsFromFirebase
+    _collection = collection;
+    _getDocs = getDocs;
+    window._setDoc = setDoc;
+    window._doc = doc;
+    
+    window.auth = auth;
+    window.db = db;
+    
+    // Cargar preguntas
+    questionsDB = await loadQuestionsFromFirebase();
+    console.log(`📚 Total preguntas disponibles: ${questionsDB.length}`);
+    
+  } catch (error) {
+    console.error("Error inicializando Firebase:", error);
+    questionsDB = getDefaultQuestions();
+  }
+}
+
+// Función de login
+window.loginConGoogle = async function() {
+  const nombre = document.getElementById("input-nombre").value;
+  if (!nombre) {
+    alert("Por favor ingresa tu nombre");
+    return;
+  }
+
+  if (!auth) {
+    alert("Error de conexión. Intente nuevamente.");
+    return;
+  }
+
+  try {
+    const provider = new window.GoogleAuthProvider();
+    const result = await window.signInWithPopup(auth, provider);
+    const user = result.user;
+
+    await window._setDoc(window._doc(db, "usuarios", user.uid), {
+      nombre: nombre,
+      email: user.email,
+      uid: user.uid,
+      fecha: new Date()
+    });
+
+    mostrarApp();
+  } catch (error) {
+    console.error(error);
+    alert("Error en login: " + error.message);
+  }
+};
+
+function mostrarApp() {
+  document.getElementById("screen-login").classList.remove("active");
+  document.getElementById("screen-home").classList.add("active");
+}
+
+// Funciones del quiz
+function startQuiz() {
+  if (!questionsDB || questionsDB.length === 0) {
+    alert("Cargando preguntas, por favor espere...");
+    return;
+  }
+  
+  // Tomar 60 preguntas aleatorias o todas si hay menos
+  const shuffled = [...questionsDB].sort(() => Math.random() - 0.5);
+  activeQuestions = shuffled.slice(0, Math.min(60, shuffled.length));
+  currentIndex = 0;
+  score = 0;
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function renderQuestion() {
+  const q = activeQuestions[currentIndex];
+  const total = activeQuestions.length;
+  const pct = ((currentIndex + 1) / total) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `Pregunta ${currentIndex+1} de ${total}`;
+  document.getElementById('q-cat').textContent = q.cat;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('answer-btns').style.display = 'flex';
+  document.getElementById('feedback-area').style.display = 'none';
+  document.getElementById('feedback-area').innerHTML = '';
+}
+
+function answer(userAns) {
+  const q = activeQuestions[currentIndex];
+  const correct = userAns === q.a;
+  if (correct) score++;
+  document.getElementById('answer-btns').style.display = 'none';
+  const fb = document.getElementById('feedback-area');
+  fb.style.display = 'block';
+  fb.innerHTML = `
+    <div class="result-feedback ${correct ? 'feedback-correct' : 'feedback-wrong'}">${correct ? '✅ ¡CORRECTO!' : '❌ INCORRECTO'}</div>
+    <div class="explanation">
+      <p class="label">Fundamento Técnico:</p>
+      <p class="text">${q.exp}</p>
+    </div>
+    <button class="btn-next" onclick="nextQuestion()">${currentIndex < activeQuestions.length - 1 ? 'SIGUIENTE PREGUNTA ›' : 'VER RESULTADOS FINAL'}</button>
+  `;
+}
+
+function nextQuestion() {
+  if (currentIndex < activeQuestions.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function motivationalPhrase(pct) {
+  if (pct >= 90) return '¡Eres un profesional de élite! El éxito es tuyo. 🏆';
+  if (pct >= 70) return '¡Excelente desempeño! Estás listo para el OS-10. 💪';
+  if (pct >= 50) return '¡Buen camino! Sigue practicando y lo lograrás. 🎯';
+  return '¡Cada intento te hace más fuerte! No te rindas. 🔥';
+}
+
+function getMedal(pct) {
+  if (pct >= 90) return {label:'🏆 Nivel Élite', cls:'medal-gold', bg:'#4a7c6f'};
+  if (pct >= 70) return {label:'🥈 Aprobado', cls:'medal-silver', bg:'#4a7c6f'};
+  if (pct >= 50) return {label:'🥉 En Progreso', cls:'medal-bronze', bg:'#d97706'};
+  return {label:'💪 Sigue Intentando', cls:'medal-try', bg:'#dc2626'};
+}
+
+function showResults() {
+  const pct = Math.round((score / activeQuestions.length) * 100);
+  finalPct = pct;
+  const medal = getMedal(pct);
+  const phrase = motivationalPhrase(pct);
+  document.getElementById('medal-badge').textContent = medal.label;
+  document.getElementById('medal-badge').className = 'medal-badge ' + medal.cls;
+  document.getElementById('pct-circle').style.background = medal.bg;
+  document.getElementById('pct-number').textContent = pct + '%';
+  document.getElementById('result-sub').innerHTML = `Has respondido correctamente <strong>${score} de ${activeQuestions.length}</strong> preguntas.`;
+  document.getElementById('result-phrase').textContent = '"' + phrase + '"';
+  showScreen('screen-results');
+}
+
+function restartQuiz() { showScreen('screen-home'); }
+
+async function buildCanvas(pct) {
+  return new Promise(resolve => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080; canvas.height = 1080;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0,0,0,1080);
+    grad.addColorStop(0,'#1e3a34'); grad.addColorStop(1,'#2e4a42');
+    ctx.fillStyle = grad; ctx.fillRect(0,0,1080,1080);
+    ctx.beginPath(); ctx.arc(540,200,320,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.04)'; ctx.fill();
+    ctx.fillStyle='#d4af37'; ctx.fillRect(80,55,920,6); ctx.fillRect(80,1019,920,6);
+    const img = new Image();
+    const draw = () => {
+      try { ctx.drawImage(img, 390, 75, 300, 300); } catch(e) {}
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#d4af37'; ctx.font = 'bold 54px Arial';
+      ctx.fillText('INASEP', 540, 445);
+      ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.font = '26px Arial';
+      ctx.fillText('Instituto Nacional de Seguridad Privada', 540, 495);
+      ctx.fillStyle = 'rgba(212,175,55,0.5)'; ctx.fillRect(200,525,680,2);
+      ctx.fillStyle = '#d4af37'; ctx.font = 'bold 180px Arial';
+      ctx.fillText(pct + '%', 540, 715);
+      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 32px Arial';
+      ctx.fillText('Resultado Ensayo OS-10 · Ley 21.659', 540, 775);
+      ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = 'italic 27px Arial';
+      const phrase = motivationalPhrase(pct);
+      if (phrase.length > 45) {
+        ctx.font = 'italic 23px Arial';
+      }
+      ctx.fillText(phrase, 540, 845);
+      ctx.fillStyle = '#d4af37'; ctx.font = 'bold 22px Arial';
+      ctx.fillText('inasep.github.io/ENSAYOSINASEP', 540, 965);
+      resolve(canvas);
+    };
+    img.onload = draw; img.onerror = draw;
+    img.src = "logo_inasep.png";
+  });
+}
+
+async function downloadResultImage() {
+  const btn = document.getElementById('btn-img');
+  btn.textContent = '⏳ Generando...';
+  btn.disabled = true;
+  try {
+    const canvas = await buildCanvas(finalPct);
+    const dataURL = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = 'resultado_inasep_' + finalPct + 'pct.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => { window.open(dataURL, '_blank'); }, 300);
+  } catch(e) {
+    alert('Error al generar imagen: ' + e.message);
+  }
+  btn.textContent = '📸 Guardar imagen del resultado';
+  btn.disabled = false;
+}
+
+function shareOnWhatsApp() {
+  const phrase = motivationalPhrase(finalPct);
+  const msg = 'Obtuve ' + finalPct + '% en el Ensayo OS-10 de INASEP! ' + phrase + ' Practica tu tambien: https://inasep.github.io/ENSAYOSINASEP/';
+  window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function shareOnFacebook() {
+  window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent('https://inasep.github.io/ENSAYOSINASEP/'), '_blank');
+}
+
+// Inicializar todo al cargar la página
+window.addEventListener('DOMContentLoaded', async () => {
+  await initFirebaseAndLoad();
+  
+  // Verificar sesión existente
+  if (auth && window._onAuthStateChanged) {
+    window._onAuthStateChanged(auth, (user) => {
+      if (user) {
+        mostrarApp();
+      }
+    });
+  }
+});
+
+// Funciones globales necesarias
+window.startQuiz = startQuiz;
+window.answer = answer;
+window.nextQuestion = nextQuestion;
+window.restartQuiz = restartQuiz;
+window.downloadResultImage = downloadResultImage;
+window.shareOnWhatsApp = shareOnWhatsApp;
+window.shareOnFacebook = shareOnFacebook;
+window.loginConGoogle = loginConGoogle;
+</script>
+</body>
+</html>
