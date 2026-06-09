@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INASEP - Administrador de Preguntas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#e8f0ee;color:#1a2e28;padding:20px}
+  .container{max-width:1400px;margin:0 auto}
+  .header{background:#2e4a42;color:white;padding:20px;border-radius:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+  .btn{background:#4a7c6f;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:700}
+  .btn-danger{background:#dc2626}
+  .btn-warning{background:#d4af37;color:#2e4a42}
+  .panel{background:white;border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
+  .panel h2{margin-bottom:15px;color:#2e4a42}
+  .upload-area{border:2px dashed #4a7c6f;border-radius:12px;padding:30px;text-align:center;margin-bottom:20px;cursor:pointer}
+  .upload-area.drag-over{background:#e8f0ee;border-color:#d4af37}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:10px;text-align:left;border-bottom:1px solid #ddd}
+  th{background:#e8f0ee}
+  .question-row:hover{background:#f5f5f5}
+  .badge{background:#4a7c6f;color:white;padding:4px 8px;border-radius:20px;font-size:12px}
+  .btn-small{padding:5px 10px;font-size:12px;margin:0 2px}
+  .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:1000}
+  .modal-content{background:white;border-radius:16px;padding:30px;width:90%;max-width:600px;max-height:80vh;overflow-y:auto}
+  .form-group{margin-bottom:15px}
+  .form-group label{display:block;margin-bottom:5px;font-weight:600}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px}
+  .stats{display:flex;gap:20px;margin-bottom:20px}
+  .stat-card{background:#e8f0ee;border-radius:12px;padding:15px;flex:1;text-align:center}
+  .stat-number{font-size:28px;font-weight:800;color:#2e4a42}
+  .export-buttons{display:flex;gap:10px;margin-bottom:20px}
+  .filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+  .filter-bar input,.filter-bar select{padding:8px;border-radius:8px;border:1px solid #ddd}
+</style>
+</head>
+<body>
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#2e4a42;justify-content:center;align-items:center;z-index:9999">
+  <div style="background:white;border-radius:20px;padding:40px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+    <div style="font-size:32px;margin-bottom:8px">🔐</div>
+    <h2 style="color:#2e4a42;margin-bottom:4px;font-size:18px">INASEP Admin</h2>
+    <p style="color:#6b7280;font-size:12px;margin-bottom:24px;text-transform:uppercase;letter-spacing:1px">Administrador de Preguntas</p>
+    <input type="email" id="login-email" placeholder="Correo electrónico" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-bottom:10px;font-size:14px">
+    <input type="password" id="login-pass" placeholder="Contraseña" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-bottom:6px;font-size:14px" onkeydown="if(event.key==='Enter') doLogin()">
+    <p id="login-error" style="color:#dc2626;font-size:12px;min-height:18px;margin-bottom:10px"></p>
+    <button onclick="doLogin()" style="width:100%;background:#2e4a42;color:white;border:none;padding:12px;border-radius:10px;font-weight:800;font-size:15px;cursor:pointer">INGRESAR</button>
+  </div>
+</div>
+
+<div id="app-container" style="display:none">
+<div class="container">
+  <div class="header">
+    <h1>📚 INASEP - Administrador de Preguntas</h1>
+    <button class="btn" onclick="logout()">🚪 Cerrar Sesión</button>
+  </div>
+
+  <!-- Panel de estadísticas -->
+  <div class="stats">
+    <div class="stat-card"><div class="stat-number" id="totalQuestions">0</div><div>Total Preguntas</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalCategories">0</div><div>Categorías</div></div>
+  </div>
+
+  <!-- Panel de carga masiva -->
+  <div class="panel">
+    <h2>📤 Carga Masiva desde Excel</h2>
+    <div class="upload-area" id="uploadArea">
+      <p>📁 Arrastra un archivo Excel (.xlsx, .xls) aquí o haz clic para seleccionar</p>
+      <p style="font-size:12px;color:#6b7280;margin-top:10px">Formato: cat | q | a | exp</p>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none">
+    </div>
+    <div class="export-buttons">
+      <button class="btn" onclick="downloadTemplate()">📥 Descargar Plantilla Excel</button>
+      <button class="btn btn-warning" onclick="exportToExcel()">📎 Exportar Preguntas a Excel</button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍 Buscar pregunta..." style="flex:2">
+    <select id="categoryFilter" style="flex:1">
+      <option value="">Todas las categorías</option>
+    </select>
+    <button class="btn" onclick="loadQuestions()">🔄 Refrescar</button>
+    <button class="btn btn-warning" onclick="openAddModal()">➕ Nueva Pregunta</button>
+  </div>
+
+  <!-- Tabla de preguntas -->
+  <div class="panel">
+    <h2>📋 Listado de Preguntas</h2>
+    <div style="overflow-x:auto">
+      <table id="questionsTable">
+        <thead>
+          <tr><th>Categoría</th><th>Pregunta</th><th>Respuesta</th><th>Explicación</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="questionsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div><!-- /app-container -->
+
+<!-- Modal para agregar/editar pregunta -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h2 id="modalTitle">Agregar Pregunta</h2>
+    <div class="form-group"><label>Categoría</label><input type="text" id="editCat" placeholder="Ej: Legislación, Prevención, etc."></div>
+    <div class="form-group"><label>Pregunta</label><textarea id="editQ" rows="3" placeholder="Escribe la pregunta aquí..."></textarea></div>
+    <div class="form-group"><label>Respuesta Correcta</label>
+      <select id="editA"><option value="true">VERDADERO</option><option value="false">FALSO</option></select>
+    </div>
+    <div class="form-group"><label>Explicación / Fundamento</label><textarea id="editExp" rows="3" placeholder="Fundamento técnico..."></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-warning" id="saveBtn" onclick="saveQuestion()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAa_lDZMLiUPRSrzEhXtMe1KLLkb4NGpCQ",
+    authDomain: "ensayoinasep.firebaseapp.com",
+    projectId: "ensayoinasep",
+    storageBucket: "ensayoinasep.firebasestorage.app",
+    messagingSenderId: "542699729754",
+    appId: "1:542699729754:web:5ca92afa1185b59b71f963"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let currentQuestions = [];
+  let editingId = null;
+
+  // Autenticación con email/password
+  function showLoginScreen() {
+    document.getElementById('app-container').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+
+  window.doLogin = async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-pass').value;
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = '';
+    if (!email || !pass) { errEl.textContent = 'Ingresa correo y contraseña.'; return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch(e) {
+      errEl.textContent = 'Credenciales incorrectas.';
+    }
+  };
+
+  window.logout = async () => { await signOut(auth); location.reload(); };
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      showLoginScreen();
+    } else {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-container').style.display = 'block';
+      loadQuestions();
+    }
+  });
+
+  // Cargar preguntas
+  async function loadQuestions() {
+    const snapshot = await getDocs(collection(db, "questions"));
+    currentQuestions = [];
+    snapshot.forEach(doc => {
+      currentQuestions.push({ id: doc.id, ...doc.data() });
+    });
+    updateStats();
+    filterAndRender();
+  }
+  window.loadQuestions = loadQuestions;
+
+  function updateStats() {
+    document.getElementById('totalQuestions').textContent = currentQuestions.length;
+    const cats = [...new Set(currentQuestions.map(q => q.cat))];
+    document.getElementById('totalCategories').textContent = cats.length;
+    const catFilter = document.getElementById('categoryFilter');
+    const currentVal = catFilter.value;
+    catFilter.innerHTML = '<option value="">Todas las categorías</option>';
+    cats.sort().forEach(c => { catFilter.innerHTML += `<option value="${c}">${c}</option>`; });
+    if (currentVal) catFilter.value = currentVal;
+  }
+
+  function filterAndRender() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const category = document.getElementById('categoryFilter').value;
+    let filtered = currentQuestions;
+    if (search) filtered = filtered.filter(q => q.q.toLowerCase().includes(search));
+    if (category) filtered = filtered.filter(q => q.cat === category);
+    renderTable(filtered);
+  }
+
+  function renderTable(questions) {
+    const tbody = document.getElementById('questionsBody');
+    tbody.innerHTML = '';
+    questions.forEach(q => {
+      const row = tbody.insertRow();
+      row.className = 'question-row';
+      row.insertCell(0).innerHTML = `<span class="badge">${escapeHtml(q.cat)}</span>`;
+      const cell1 = row.insertCell(1);
+      cell1.textContent = (q.q || '').substring(0, 100) + (q.q && q.q.length > 100 ? '...' : '');
+      row.insertCell(2).textContent = q.a === true || q.a === "true" ? '✅ VERDADERO' : '❌ FALSO';
+      const cell3 = row.insertCell(3);
+      cell3.textContent = (q.exp || '').substring(0, 80) + (q.exp && q.exp.length > 80 ? '...' : '');
+      const actions = row.insertCell(4);
+      const btnEdit = document.createElement('button');
+      btnEdit.className = 'btn-small btn';
+      btnEdit.textContent = '✏️ Editar';
+      btnEdit.dataset.id = q.id;
+      btnEdit.addEventListener('click', () => editQuestion(q.id));
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn-small btn btn-danger';
+      btnDel.textContent = '🗑️ Eliminar';
+      btnDel.dataset.id = q.id;
+      btnDel.addEventListener('click', () => deleteQuestion(q.id));
+      actions.appendChild(btnEdit);
+      actions.appendChild(btnDel);
+    });
+  }
+
+  function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m;}); }
+
+  // CRUD
+  window.openAddModal = () => { editingId = null; document.getElementById('modalTitle').innerText = 'Agregar Pregunta'; document.getElementById('editCat').value = ''; document.getElementById('editQ').value = ''; document.getElementById('editA').value = 'true'; document.getElementById('editExp').value = ''; document.getElementById('modal').style.display = 'flex'; };
+  
+  window.editQuestion = async (id) => {
+    const q = currentQuestions.find(q => q.id === id);
+    if (!q) return;
+    editingId = id;
+    document.getElementById('modalTitle').innerText = 'Editar Pregunta';
+    document.getElementById('editCat').value = q.cat || '';
+    document.getElementById('editQ').value = q.q || '';
+    document.getElementById('editA').value = q.a === true || q.a === "true" ? 'true' : 'false';
+    document.getElementById('editExp').value = q.exp || '';
+    document.getElementById('modal').style.display = 'flex';
+  };
+
+  window.saveQuestion = async () => {
+    const cat = document.getElementById('editCat').value.trim();
+    const qText = document.getElementById('editQ').value.trim();
+    const aVal = document.getElementById('editA').value === 'true';
+    const exp = document.getElementById('editExp').value.trim();
+    if (!cat || !qText) { alert('Categoría y pregunta son obligatorias'); return; }
+    const data = { cat, q: qText, a: aVal, exp };
+    try {
+      if (editingId) await updateDoc(doc(db, "questions", editingId), data);
+      else await addDoc(collection(db, "questions"), data);
+      closeModal();
+      loadQuestions();
+    } catch(e) { alert("Error: " + e.message); }
+  };
+
+  window.deleteQuestion = async (id) => {
+    if (!confirm('¿Eliminar esta pregunta permanentemente?')) return;
+    await deleteDoc(doc(db, "questions", id));
+    loadQuestions();
+  };
+
+  function closeModal() { document.getElementById('modal').style.display = 'none'; editingId = null; }
+  window.closeModal = closeModal;
+
+  // Excel import/export
+  window.downloadTemplate = () => {
+    const template = [['Categoría', 'Pregunta', 'Respuesta (VERDADERO/FALSO)', 'Explicación'], ['Legislación', '¿La seguridad privada es complementaria a la seguridad pública?', 'VERDADERO', 'Art. 2 de la Ley Nº 21.659']];
+    const ws = XLSX.utils.aoa_to_sheet(template);
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Plantilla');
+    XLSX.writeFile(wb, 'plantilla_preguntas_inasep.xlsx');
+  };
+
+  window.exportToExcel = () => {
+    const data = currentQuestions.map(q => [q.cat, q.q, q.a === true || q.a === "true" ? 'VERDADERO' : 'FALSO', q.exp]);
+    data.unshift(['Categoría', 'Pregunta', 'Respuesta', 'Explicación']);
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Preguntas');
+    XLSX.writeFile(wb, `preguntas_inasep_${new Date().toISOString().slice(0,19)}.xlsx`);
+  };
+
+  // Drag & drop para Excel
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('fileInput');
+  uploadArea.addEventListener('click', () => fileInput.click());
+  uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+  uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+  uploadArea.addEventListener('drop', async (e) => { e.preventDefault(); uploadArea.classList.remove('drag-over'); const file = e.dataTransfer.files[0]; if (file) processExcel(file); });
+  fileInput.addEventListener('change', (e) => { if (e.target.files[0]) processExcel(e.target.files[0]); });
+
+  async function processExcel(file) {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      if (rows.length < 2) { alert('El archivo debe contener al menos una fila de datos'); return; }
+      const headers = rows[0];
+      const catIdx = headers.findIndex(h => h && (h.toLowerCase().includes('categoria') || h.toLowerCase().includes('categoría')));
+      const qIdx = headers.findIndex(h => h && h.toLowerCase().includes('pregunta'));
+      const aIdx = headers.findIndex(h => h && (h.toLowerCase().includes('respuesta') || h.toLowerCase().includes('verdadero')));
+      const expIdx = headers.findIndex(h => h && h.toLowerCase().includes('explicacion'));
+      if (catIdx === -1 || qIdx === -1 || aIdx === -1) { alert('Formato inválido. Usa la plantilla descargable.'); return; }
+      let success = 0, fail = 0;
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || !row[catIdx] || !row[qIdx]) continue;
+        const cat = String(row[catIdx]).trim();
+        const qText = String(row[qIdx]).trim();
+        let aVal = false;
+        const rawA = String(row[aIdx]).toUpperCase().trim();
+        if (rawA === 'VERDADERO' || rawA === 'TRUE' || rawA === 'V') aVal = true;
+        const exp = expIdx !== -1 && row[expIdx] ? String(row[expIdx]).trim() : '';
+        try {
+          await addDoc(collection(db, "questions"), { cat, q: qText, a: aVal, exp });
+          success++;
+        } catch(e) { fail++; }
+      }
+      alert(`✅ Importación completada: ${success} agregadas, ${fail} fallidas`);
+      loadQuestions();
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  // Event listeners de filtros
+  document.getElementById('searchInput').addEventListener('input', filterAndRender);
+  document.getElementById('categoryFilter').addEventListener('change', filterAndRender);
+
+  // Exponer funciones globales
+  window.loadQuestions = loadQuestions;
+  window.editQuestion = editQuestion;
+  window.deleteQuestion = deleteQuestion;
+  window.openAddModal = openAddModal;
+  window.saveQuestion = saveQuestion;
+  window.closeModal = closeModal;
+  window.downloadTemplate = downloadTemplate;
+  window.exportToExcel = exportToExcel;
+</script>
+</body>
+</html>
